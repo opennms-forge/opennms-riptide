@@ -43,6 +43,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.net.InetAddresses;
 
@@ -93,25 +94,25 @@ public class Flow {
         public final boolean egress;
 
         private Record(final Builder builder) {
-            this.srcAddr = builder.srcAddr;
-            this.dstAddr = builder.dstAddr;
-            this.nextHop = builder.nextHop;
-            this.snmpInputIface = builder.snmpInputIface;
-            this.snmpOutputIface = builder.snmpOutputIface;
-            this.packets = builder.packets;
-            this.octets = builder.octets;
-            this.firstUptime = builder.firstUptime;
-            this.lastUptime = builder.lastUptime;
-            this.srcPort = builder.srcPort;
-            this.dstPort = builder.dstPort;
-            this.tcpFlags = builder.tcpFlags;
-            this.protocol = builder.protocol;
-            this.srcAS = builder.srcAS;
-            this.dstAS = builder.dstAS;
-            this.tos = builder.tos;
-            this.srcMask = builder.srcMask;
-            this.dstMask = builder.dstMask;
-            this.egress = builder.egress;
+            this.srcAddr = Preconditions.checkNotNull(builder.srcAddr);
+            this.dstAddr = Preconditions.checkNotNull(builder.dstAddr);
+            this.nextHop = Preconditions.checkNotNull(builder.nextHop);
+            this.snmpInputIface = Preconditions.checkNotNull(builder.snmpInputIface);
+            this.snmpOutputIface = Preconditions.checkNotNull(builder.snmpOutputIface);
+            this.packets = Preconditions.checkNotNull(builder.packets);
+            this.octets = Preconditions.checkNotNull(builder.octets);
+            this.firstUptime = Preconditions.checkNotNull(builder.firstUptime);
+            this.lastUptime = Preconditions.checkNotNull(builder.lastUptime);
+            this.srcPort = Preconditions.checkNotNull(builder.srcPort);
+            this.dstPort = Preconditions.checkNotNull(builder.dstPort);
+            this.tcpFlags = Preconditions.checkNotNull(builder.tcpFlags);
+            this.protocol = Preconditions.checkNotNull(builder.protocol);
+            this.srcAS = Preconditions.checkNotNull(builder.srcAS);
+            this.dstAS = Preconditions.checkNotNull(builder.dstAS);
+            this.tos = Preconditions.checkNotNull(builder.tos);
+            this.srcMask = Preconditions.checkNotNull(builder.srcMask);
+            this.dstMask = Preconditions.checkNotNull(builder.dstMask);
+            this.egress = Preconditions.checkNotNull(builder.egress);
         }
 
         public static class Builder {
@@ -276,14 +277,16 @@ public class Flow {
     public final List<Record> records;
 
     private Flow(final Builder builder) {
-        this.uptime = builder.uptime;
-        this.time = builder.time;
+        this.uptime = Preconditions.checkNotNull(builder.uptime);
+        this.time = Preconditions.checkNotNull(builder.time);
         this.flowSequence = builder.flowSequence;
         this.engineType = builder.engineType;
         this.engineId = builder.engineId;
-        this.samplingMode = builder.samplingMode;
+        this.samplingMode = Preconditions.checkNotNull(builder.samplingMode);
         this.samplingInterval = builder.samplingInterval;
-        this.records = builder.records.stream()
+
+        // TODO fooker: Check not empty
+        this.records = Preconditions.checkNotNull(builder.records).stream()
                 .map(Record.Builder::build)
                 .collect(Collectors.toList());
 

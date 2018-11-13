@@ -33,8 +33,7 @@ import java.net.Inet4Address;
 import java.util.List;
 import java.util.Random;
 
-import org.opennms.riptide.gen.Network;
-import org.opennms.riptide.gen.PortRange;
+import com.google.common.graph.Network;
 
 public class Context {
     private final List<Flow> flows;
@@ -54,21 +53,21 @@ public class Context {
         return Flow.Record.builder();
     }
 
-    public Network network(final Inet4Address base, final int mask) {
-        return new Network(base, mask);
-    }
-
-    public Network network(final String base, final int mask) {
-        return new Network(base, mask);
-    }
-
-    public Network network(final String network) {
-        return Network.parse(network);
-    }
-
-    public PortRange ports(final int min, final int max) {
-        return new PortRange(min, max);
-    }
+//    public Network network(final Inet4Address base, final int mask) {
+//        return new Network(base, mask);
+//    }
+//
+//    public Network network(final String base, final int mask) {
+//        return new Network(base, mask);
+//    }
+//
+//    public Network network(final String network) {
+//        return Network.parse(network);
+//    }
+//
+//    public PortRange ports(final int min, final int max) {
+//        return new PortRange(min, max);
+//    }
 
     public void send(final Flow flow) throws IOException {
         this.flows.add(flow);
