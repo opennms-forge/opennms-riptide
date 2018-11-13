@@ -56,18 +56,6 @@ public class Timespan {
     }
 
     public static class Ticker implements Iterable<Timespan> {
-
-//        public static class Tick {
-//            public final Instant instant;
-//            public final Duration duration;
-//
-//            public Tick(final Instant instant,
-//                        final Duration duration) {
-//                this.instant = instant;
-//                this.duration = duration;
-//            }
-//        }
-
         private final Timespan timespan;
         private final Duration interval;
 

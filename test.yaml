@@ -1,0 +1,20 @@
+duration: 50000
+sendSize: 500000000
+sendPackets: 4
+recvSize: 250000000
+recvPackets: 2
+client:
+  address: 10.10.0.2
+  # port: 8080
+  gateway: 10.10.0.1
+  snmpInterface: 1
+  # as:
+  # mask:
+server:
+  address: 10.20.0.2
+  port: 8080
+  gateway: 10.20.0.1
+  snmpInterface: 2
+  as: 2
+  mask: 16
+

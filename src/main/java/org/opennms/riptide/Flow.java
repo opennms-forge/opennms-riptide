@@ -34,18 +34,15 @@ import static org.opennms.riptide.BufferUtils.uint32;
 import static org.opennms.riptide.BufferUtils.uint8;
 
 import java.lang.management.ManagementFactory;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.google.common.net.InetAddresses;
 
 public class Flow {
 
@@ -63,206 +60,6 @@ public class Flow {
         }
     }
 
-    public static class Record {
-        public final Inet4Address srcAddr;
-        public final Inet4Address dstAddr;
-        public final Inet4Address nextHop;
-
-        public final int snmpInputIface;
-        public final int snmpOutputIface;
-
-        public final long packets;
-        public final long octets;
-
-        public final Duration firstUptime;
-        public final Duration lastUptime;
-
-        public final int srcPort;
-        public final int dstPort;
-
-        public final short tcpFlags;
-        public final short protocol;
-
-        public final int srcAS;
-        public final int dstAS;
-
-        public final short tos;
-
-        public final short srcMask;
-        public final short dstMask;
-
-        public final boolean egress;
-
-        private Record(final Builder builder) {
-            this.srcAddr = Preconditions.checkNotNull(builder.srcAddr);
-            this.dstAddr = Preconditions.checkNotNull(builder.dstAddr);
-            this.nextHop = Preconditions.checkNotNull(builder.nextHop);
-            this.snmpInputIface = Preconditions.checkNotNull(builder.snmpInputIface);
-            this.snmpOutputIface = Preconditions.checkNotNull(builder.snmpOutputIface);
-            this.packets = Preconditions.checkNotNull(builder.packets);
-            this.octets = Preconditions.checkNotNull(builder.octets);
-            this.firstUptime = Preconditions.checkNotNull(builder.firstUptime);
-            this.lastUptime = Preconditions.checkNotNull(builder.lastUptime);
-            this.srcPort = Preconditions.checkNotNull(builder.srcPort);
-            this.dstPort = Preconditions.checkNotNull(builder.dstPort);
-            this.tcpFlags = Preconditions.checkNotNull(builder.tcpFlags);
-            this.protocol = Preconditions.checkNotNull(builder.protocol);
-            this.srcAS = Preconditions.checkNotNull(builder.srcAS);
-            this.dstAS = Preconditions.checkNotNull(builder.dstAS);
-            this.tos = Preconditions.checkNotNull(builder.tos);
-            this.srcMask = Preconditions.checkNotNull(builder.srcMask);
-            this.dstMask = Preconditions.checkNotNull(builder.dstMask);
-            this.egress = Preconditions.checkNotNull(builder.egress);
-        }
-
-        public static class Builder {
-            private Inet4Address srcAddr;
-            private Inet4Address dstAddr;
-            private Inet4Address nextHop;
-
-            private int snmpInputIface;
-            private int snmpOutputIface;
-
-            private long packets;
-            private long octets;
-
-            private Duration firstUptime;
-            private Duration lastUptime;
-
-            private int srcPort;
-            private int dstPort;
-
-            private short tcpFlags;
-            private short protocol;
-
-            private int srcAS;
-            private int dstAS;
-
-            private short tos;
-
-            private short srcMask;
-            private short dstMask;
-
-            private boolean egress;
-
-            private Builder() {
-                this.srcAddr = InetAddresses.fromInteger(0);
-                this.dstAddr = InetAddresses.fromInteger(0);
-                this.nextHop = InetAddresses.fromInteger(0);
-                this.firstUptime = Duration.ZERO;
-                this.lastUptime = Duration.ZERO;
-            }
-
-            public Builder withSrcAddr(final Inet4Address srcAddr) {
-                this.srcAddr = srcAddr;
-                return this;
-            }
-
-            public Builder withSrcAddr(final int b1, final int b2, final int b3, final int b4) throws UnknownHostException {
-                this.srcAddr = (Inet4Address) InetAddress.getByAddress(new byte[]{(byte) b1, (byte) b2, (byte) b3, (byte) b4});
-                return this;
-            }
-
-            public Builder withDstAddr(final Inet4Address dstAddr) {
-                this.dstAddr = dstAddr;
-                return this;
-            }
-
-            public Builder withNextHop(final Inet4Address nextHop) {
-                this.nextHop = nextHop;
-                return this;
-            }
-
-            public Builder withSnmpInputIface(final int snmpInputIface) {
-                this.snmpInputIface = snmpInputIface;
-                return this;
-            }
-
-            public Builder withSnmpOutputIface(final int snmpOutputIface) {
-                this.snmpOutputIface = snmpOutputIface;
-                return this;
-            }
-
-            public Builder withPackets(final long packets) {
-                this.packets = packets;
-                return this;
-            }
-
-            public Builder withOctets(final long octets) {
-                this.octets = octets;
-                return this;
-            }
-
-            public Builder withFirstUptime(final Duration firstUptime) {
-                this.firstUptime = firstUptime;
-                return this;
-            }
-
-            public Builder withLastUptime(final Duration lastUptime) {
-                this.lastUptime = lastUptime;
-                return this;
-            }
-
-            public Builder withSrcPort(final int srcPort) {
-                this.srcPort = srcPort;
-                return this;
-            }
-
-            public Builder withDstPort(final int dstPort) {
-                this.dstPort = dstPort;
-                return this;
-            }
-
-            public Builder withTcpFlags(final short tcpFlags) {
-                this.tcpFlags = tcpFlags;
-                return this;
-            }
-
-            public Builder withProtocol(final short protocol) {
-                this.protocol = protocol;
-                return this;
-            }
-
-            public Builder withSrcAS(final int srcAS) {
-                this.srcAS = srcAS;
-                return this;
-            }
-
-            public Builder withDstAS(final int dstAS) {
-                this.dstAS = dstAS;
-                return this;
-            }
-
-            public Builder withTos(final short tos) {
-                this.tos = tos;
-                return this;
-            }
-
-            public Builder withSrcMask(final short srcMask) {
-                this.srcMask = srcMask;
-                return this;
-            }
-
-            public Builder withDstMask(final short dstMask) {
-                this.dstMask = dstMask;
-                return this;
-            }
-
-            public Builder withEgress(final boolean egress) {
-                this.egress = egress;
-                return this;
-            }
-
-            public Record build() {
-                return new Record(this);
-            }
-        }
-
-        public static Builder builder() {
-            return new Builder();
-        }
-    }
-
     public final Duration uptime;
     public final Instant time;
 
@@ -274,7 +71,7 @@ public class Flow {
     public final SamplingMode samplingMode;
     public final int samplingInterval;
 
-    public final List<Record> records;
+    public final List<FlowRecord> records;
 
     private Flow(final Builder builder) {
         this.uptime = Preconditions.checkNotNull(builder.uptime);
@@ -287,9 +84,23 @@ public class Flow {
 
         // TODO fooker: Check not empty
         this.records = Preconditions.checkNotNull(builder.records).stream()
-                .map(Record.Builder::build)
+                .map(FlowRecord.Builder::build)
                 .collect(Collectors.toList());
 
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("uptime", uptime)
+                .add("time", time)
+                .add("flowSequence", flowSequence)
+                .add("engineType", engineType)
+                .add("engineId", engineId)
+                .add("samplingMode", samplingMode)
+                .add("samplingInterval", samplingInterval)
+                .add("records", records)
+                .toString();
     }
 
     public static class Builder {
@@ -306,7 +117,7 @@ public class Flow {
         private Flow.SamplingMode samplingMode;
         private int samplingInterval;
 
-        private List<Record.Builder> records;
+        private List<FlowRecord.Builder> records;
 
         private Builder() {
             this.uptime = Duration.ofMillis(ManagementFactory.getRuntimeMXBean().getUptime()); // TODO fooker: Better default value?
@@ -351,7 +162,7 @@ public class Flow {
             return this;
         }
 
-        public Builder withRecord(final Record.Builder builder) {
+        public Builder withRecord(final FlowRecord.Builder builder) {
             this.records.add(builder);
             return this;
         }
@@ -378,7 +189,7 @@ public class Flow {
         uint8(buffer, this.engineId);
         uint16(buffer, this.samplingMode.value << 14 | this.samplingInterval);
 
-        for (final Record record: this.records) {
+        for (final FlowRecord record : this.records) {
             bytes(buffer, record.srcAddr.getAddress());
             bytes(buffer, record.dstAddr.getAddress());
             bytes(buffer, record.nextHop.getAddress());

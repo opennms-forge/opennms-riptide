@@ -37,22 +37,28 @@ import com.google.common.base.Preconditions;
 
 public class Simulation {
 
+    interface Sender {
+        void send(Flow flow);
+    }
+
     // TODO fooker: Is this feasible?
     private final Instant bootTime = Instant.ofEpochSecond((long) ((System.currentTimeMillis() / 1000L) * Math.random()));
 
     private final TcpSession tcpSession;
+    private final Duration flushInterval;
 
-    public Simulation(final TcpSession tcpSession) {
-        this.tcpSession = tcpSession;
+    public Simulation(final TcpSession tcpSession, final Duration flushInterval) {
+        this.tcpSession = Objects.requireNonNull(tcpSession);
+        this.flushInterval = Objects.requireNonNull(flushInterval);
     }
 
-    public void simulate(final Duration flushInterval) {
+    public void simulate(final Sender sender) {
         final float sendPacketRate = this.tcpSession.sendPackets / (float) this.tcpSession.timespan.duration().toMillis();
         final float sendOctetsRate = this.tcpSession.sendSize / (float) this.tcpSession.timespan.duration().toMillis();
         final float recvPacketRate = this.tcpSession.recvPackets / (float) this.tcpSession.timespan.duration().toMillis();
         final float recvOctetsRate = this.tcpSession.recvSize / (float) this.tcpSession.timespan.duration().toMillis();
 
-        final Sleeper sleeper = new Sleeper(this.tcpSession.timespan.ticker(flushInterval));
+        final Sleeper sleeper = new Sleeper(this.tcpSession.timespan.ticker(this.flushInterval));
         for (final Positional.Positioned<Timespan> tick : Positional.from(sleeper)) {
             short sendFlags = 0x18;
             short recvFlags = 0x18;
@@ -65,7 +71,7 @@ public class Simulation {
                 recvFlags |= 0x99;
             }
 
-            final Flow.Record.Builder sendRecord = Flow.Record.builder()
+            final FlowRecord.Builder sendRecord = FlowRecord.builder()
                     .withSrcAddr(this.tcpSession.client.address)
                     .withDstAddr(this.tcpSession.server.address)
                     .withNextHop(this.tcpSession.client.gateway)
@@ -85,7 +91,7 @@ public class Simulation {
                     .withSrcMask(this.tcpSession.client.mask)
                     .withDstMask(this.tcpSession.server.mask);
 
-            final Flow.Record.Builder recvRecord = Flow.Record.builder()
+            final FlowRecord.Builder recvRecord = FlowRecord.builder()
                     .withSrcAddr(this.tcpSession.server.address)
                     .withDstAddr(this.tcpSession.client.address)
                     .withNextHop(this.tcpSession.server.gateway)
@@ -108,13 +114,14 @@ public class Simulation {
             final Flow.Builder flow = Flow.builder()
                     .withUptime(Duration.between(this.bootTime, tick.element.e))
                     .withTime(tick.element.e)
-//                    .withFlowSequence()
                     .withEngineType((short) 0x20)
                     .withEngineId((short) 0x20)
                     .withSamplingMode(Flow.SamplingMode.Unassigned)
                     .withSamplingInterval(0)
                     .withRecord(sendRecord)
                     .withRecord(recvRecord);
+
+            sender.send(flow.build());
         }
     }
 

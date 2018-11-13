@@ -28,90 +28,17 @@
 
 package org.opennms.riptide;
 
-import java.net.Inet4Address;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Random;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Preconditions;
-import com.google.common.net.InetAddresses;
 
+@JsonDeserialize(builder = TcpSession.Builder.class)
 public class TcpSession {
-    public static class Transport {
-        // FIXME fooker: Not sure if this is the right name...
-
-        public final Inet4Address address;
-        public final int port;
-        public final Inet4Address gateway;
-        public final int snmpInterface;
-        public final int as;
-        public final short mask;
-
-        private Transport(final Builder builder) {
-            this.address = builder.address;
-            this.port = builder.port;
-            this.gateway = builder.gateway;
-            this.snmpInterface = builder.snmpInterface;
-            this.as = builder.as;
-            this.mask = builder.mask;
-        }
-
-        public static class Builder {
-            private Inet4Address address;
-            private int port;
-            private Inet4Address gateway;
-            private int snmpInterface;
-            private int as;
-            private short mask;
-
-            public Builder() {
-                this.port = new Random().nextInt(0xFFFF);
-                this.gateway = InetAddresses.fromInteger(0);
-                this.snmpInterface = 1;
-            }
-
-            public Builder withAddress(final Inet4Address address) {
-                this.address = address;
-                return this;
-            }
-
-            public Builder withPort(final int port) {
-                this.port = port;
-                return this;
-            }
-
-            public Builder withGateway(final Inet4Address gateway) {
-                this.gateway = gateway;
-                return this;
-            }
-
-            public Builder withSnmpInterface(final int snmpInterface) {
-                this.snmpInterface = snmpInterface;
-                return this;
-            }
-
-            public Builder withAS(final int as) {
-                this.as = as;
-                return this;
-            }
-
-            public Builder withMask(final short mask) {
-                this.mask = mask;
-                return this;
-            }
-
-            public Transport build() {
-                return new Transport(this);
-            }
-        }
-
-        public static TcpSession.Builder builder() {
-            return new TcpSession.Builder();
-        }
-    }
-
-    public final Transport client;
-    public final Transport server;
+    public final Endpoint client;
+    public final Endpoint server;
 
     public final Timespan timespan;
 
@@ -121,10 +48,9 @@ public class TcpSession {
     public final long recvSize;
     public final long recvPackets;
 
-
     public TcpSession(final Builder builder) {
-        this.client = Preconditions.checkNotNull(builder.client).build();
-        this.server = Preconditions.checkNotNull(builder.server).build();
+        this.client = Preconditions.checkNotNull(builder.client);
+        this.server = Preconditions.checkNotNull(builder.server);
         this.timespan = Preconditions.checkNotNull(builder.timespan);
         this.sendSize = builder.sendSize;
         this.sendPackets = builder.sendPackets;
@@ -132,9 +58,10 @@ public class TcpSession {
         this.recvPackets = builder.recvPackets;
     }
 
+    @JsonPOJOBuilder(buildMethodName = "build", withPrefix = "with")
     public static class Builder {
-        private Transport.Builder client;
-        private Transport.Builder server;
+        private Endpoint client;
+        private Endpoint server;
 
         private Timespan timespan;
 
@@ -144,12 +71,12 @@ public class TcpSession {
         private long recvSize;
         private long recvPackets;
 
-        public Builder withClient(final Transport.Builder client) {
+        public Builder withClient(final Endpoint client) {
             this.client = client;
             return this;
         }
 
-        public Builder withServer(final Transport.Builder server) {
+        public Builder withServer(final Endpoint server) {
             this.server = server;
             return this;
         }
@@ -159,6 +86,11 @@ public class TcpSession {
             return this;
         }
 
+        public Builder withDuration(final Duration duration) {
+            final Instant now = Instant.now();
+            this.timespan = new Timespan(now, now.plus(duration));
+            return this;
+        }
         public Builder withSendSize(final long sendSize) {
             this.sendSize = sendSize;
             return this;
