@@ -1,10 +1,6 @@
 package org.opennms.riptide;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
@@ -13,7 +9,7 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import org.opennms.riptide.args.InetSocketAddressOptionHandler;
+import org.opennms.riptide.args.Inet4SockAddrOptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +25,11 @@ public class Riptide {
         @Argument(index = 0, metaVar = "FILE", required = true)
         private Path file;
 
-        @Argument(index = 1, metaVar = "HOST:PORT", multiValued = true, handler = InetSocketAddressOptionHandler.class, required = true)
-        private List<InetSocketAddress> targets = Lists.newArrayList();
+        @Argument(index = 1, metaVar = "HOST:PORT", multiValued = true, handler = Inet4SockAddrOptionHandler.class, required = true)
+        private List<Inet4SockAddr> targets = Lists.newArrayList();
+
+        @Option(name = "-source", metaVar = "HOST:PORT", handler = Inet4SockAddrOptionHandler.class, required = false)
+        private Inet4SockAddr source = null;
 
         @Option(name = "-flush-interval", metaVar = "SECS", required = false)
         private long flushInterval = 30;
@@ -40,12 +39,14 @@ public class Riptide {
     }
 
     private final Path file;
-    private final List<InetSocketAddress> targets;
+    private final Inet4SockAddr source;
+    private final List<Inet4SockAddr> targets;
     private final Duration flushInterval;
     private final boolean dryRun;
 
     public Riptide(final CmdLine cmdLine) {
         this.file = cmdLine.file;
+        this.source = cmdLine.source;
         this.targets = cmdLine.targets;
         this.flushInterval = Duration.ofSeconds(cmdLine.flushInterval);
         this.dryRun = cmdLine.dryRun;
@@ -68,38 +69,19 @@ public class Riptide {
 
         final Simulation.Sender sender;
         if (dryRun) {
-            sender = new Simulation.Sender() {
-                @Override
-                public void send(Flow flow) {
-                    LOG.info("Sending flow {} ", flow);
-                }
-            };
+            sender = new DummySender();
         } else {
-            final DatagramSocket datagramSocket;
             try {
-                datagramSocket = new DatagramSocket();
-            } catch (SocketException e) {
+                if (this.source == null) {
+                    sender = new SimpleSender(this.targets);
+                } else {
+                    sender = new SpoofingSender(this.source, this.targets);
+                }
+            } catch (IOException e) {
                 LOG.error("Failed to initialize datagram socket", e);
                 System.exit(1);
                 return;
             }
-
-            sender = new Simulation.Sender() {
-                @Override
-                public void send(Flow flow) {
-                    try {
-                        final byte[] buffer = flow.write().array();
-                        for (final InetSocketAddress addr : Riptide.this.targets) {
-                            final DatagramPacket packet = new DatagramPacket(buffer, buffer.length, addr);
-
-                            LOG.debug("Sending packet to {} ({} bytes)", addr, packet.getLength());
-                            datagramSocket.send(packet);
-                        }
-                    } catch (final IOException e) {
-                        LOG.error("Failed to send packet", e);
-                    }
-                }
-            };
         }
 
         new Simulation(tcpSession, this.flushInterval).simulate(sender);

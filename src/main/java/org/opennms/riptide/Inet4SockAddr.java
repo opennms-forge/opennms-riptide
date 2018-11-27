@@ -26,33 +26,29 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.riptide.args;
+package org.opennms.riptide;
 
+import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
-import org.kohsuke.args4j.spi.Setter;
+import com.google.common.base.Preconditions;
 
-import com.google.common.net.HostAndPort;
+public class Inet4SockAddr {
+    public final Inet4Address addr;
+    public final int port;
 
-public class InetSocketAddressOptionHandler extends OneArgumentOptionHandler<InetSocketAddress> {
-    public InetSocketAddressOptionHandler(final CmdLineParser parser,
-                                          final OptionDef option,
-                                          final Setter<? super InetSocketAddress> setter) {
-        super(parser, option, setter);
+    public Inet4SockAddr(final Inet4Address addr,
+                         final int port) {
+        this.addr = Preconditions.checkNotNull(addr);
+        this.port = port;
+    }
+
+    public InetSocketAddress toSocketAddress() {
+        return new InetSocketAddress(this.addr, this.port);
     }
 
     @Override
-    protected InetSocketAddress parse(String argument) throws CmdLineException {
-        final HostAndPort hap = HostAndPort.fromString(argument);
-        return new InetSocketAddress(hap.getHost(), hap.getPort());
-    }
-
-    @Override
-    public String getDefaultMetaVariable() {
-        return "HOST:PORT";
+    public String toString() {
+        return String.format("%s:%s", this.addr, this.port);
     }
 }

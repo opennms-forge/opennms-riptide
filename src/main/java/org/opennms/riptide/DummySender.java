@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2017 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2017 The OpenNMS Group, Inc.
+ * Copyright (C) 2018 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2018 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -28,33 +28,14 @@
 
 package org.opennms.riptide;
 
-import java.nio.ByteBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class BufferUtils {
+public class DummySender implements Simulation.Sender {
+    private final static Logger LOG = LoggerFactory.getLogger(DummySender.class);
 
-    private BufferUtils() {
-    }
-
-    public static ByteBuffer uint8(final ByteBuffer buffer, int value) {
-        return buffer.put((byte) ((value >> 0) & 0xFF));
-    }
-
-    public static ByteBuffer uint16(final ByteBuffer buffer, int value) {
-        return buffer
-                .put((byte)((value >> 8) & 0xFF))
-                .put((byte)((value >> 0) & 0xFF));
-    }
-
-    public static ByteBuffer uint32(final ByteBuffer buffer, long value) {
-        return buffer
-                .put((byte)((value >> 24) & 0xFF))
-                .put((byte)((value >> 16) & 0xFF))
-                .put((byte)((value >> 8) & 0xFF))
-                .put((byte)((value >> 0) & 0xFF));
-    }
-
-    public static ByteBuffer bytes(final ByteBuffer buffer, final byte[] bytes) {
-        buffer.put(bytes);
-        return buffer;
+    @Override
+    public void send(final Flow flow) {
+        LOG.info("Sending flow {} ", flow);
     }
 }
